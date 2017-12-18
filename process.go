@@ -6,23 +6,25 @@ import (
 	"os"
 )
 
-func KillProcess(name string) {
+func KillProcess(name string) bool {
 	processes, err := ps.Processes()
 	if err != nil {
-		fmt.Println("Unable to retrieve list of active processes.")
-		return
+		fmt.Println(err)
+		return false
 	}
 	for _, process := range processes {
 		if process.Executable() == name {
 			pid := process.Pid()
-			proc, err := os.FindProcess(pid)
-			if err == nil {
-				if os.Getpid() != pid {
-					proc.Kill()
+			proc, _ := os.FindProcess(pid)
+			if os.Getpid() != pid {
+				err := proc.Kill()
+				if err != nil {
+					fmt.Println(err)
+					return false
 				}
-			} else {
-				fmt.Println("no process named '%v' found", name)
+				return true
 			}
 		}
 	}
+	return false
 }
